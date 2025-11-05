@@ -1,0 +1,29 @@
+plugins {
+    id 'java' // Only apply the standard Java plugin
+}
+
+// NOTE: Repositories and dependency-management are handled by the root build.gradle
+
+dependencies {
+    // 1. Core utilities (like Lombok, if used for domain models)
+    //    Versions are handled by the BOM imported in the root project.
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // 2. Add other necessary library dependencies here (e.g., if you need JPA annotations)
+    // implementation 'jakarta.persistence:jakarta.persistence-api'
+}
+
+// 🔑 Crucial: Disable the bootJar task for this module
+// This task is defined in the root build.gradle's subprojects block to be disabled
+// by default, but it's good practice to ensure it's off if the Spring Boot plugin
+// somehow gets applied here. Since you are not applying Spring Boot here,
+// this block is technically redundant but harmless if inherited config is complex.
+//tasks.named('bootJar') {
+//    enabled = false
+//}
+
+// Ensure the standard 'jar' task (which creates the library JAR) is enabled
+tasks.named('jar') {
+    enabled = true
+}

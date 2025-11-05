@@ -1,0 +1,10 @@
+dependencies {
+    // Spring Batch and its required starter
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    // Dependency on the shared domain models
+    implementation project(':batch-domain')
+}
+
+// NOTE: bootJar is disabled by default in the root build.gradle

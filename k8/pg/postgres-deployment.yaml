@@ -1,0 +1,44 @@
+# postgres-postgres-cronjob-import-users.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-database
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine # 🔑 Using the stable PostgreSQL image
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            # 🔑 Critical: Define the database credentials and name
+            - name: POSTGRES_DB
+              value: batchdb
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials-secret # Reference a Kubernetes Secret for security
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials-secret # Reference a Kubernetes Secret for security
+                  key: password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-storage
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim

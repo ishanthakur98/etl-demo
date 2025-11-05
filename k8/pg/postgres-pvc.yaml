@@ -1,0 +1,11 @@
+# postgres-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce # Only one node can mount this volume at a time
+  resources:
+    requests:
+      storage: 5Gi # Request 5 GB of storage (adjust as needed)

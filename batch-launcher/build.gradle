@@ -1,0 +1,22 @@
+plugins {
+    id 'org.springframework.boot' version '3.2.0' // Only here!
+    id 'java'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+//    runtimeOnly 'com.h2database:h2' // In-memory DB for Job Repository
+    runtimeOnly 'org.postgresql:postgresql'
+    // 🔑 Inject all job modules as dependencies
+    implementation project(':job-import-users')
+    implementation project(':job-process-data')
+    implementation project(':job-report-gen')
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+//
+    implementation project(':batch-domain') // Also helpful here
+}
+
+// Enable bootJar to create the final executable JAR
+tasks.named('bootJar') {
+    enabled = true
+}

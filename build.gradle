@@ -1,0 +1,47 @@
+plugins {
+    id 'io.spring.dependency-management' version '1.1.3'
+}
+
+allprojects {
+    group 'com.example'
+    version '1.0.0-SNAPSHOT'
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    dependencyManagement {
+        imports {
+            // 🔑 FIX: Replace the Java class reference with the direct string literal.
+            // This avoids the "unknown property 'org'" error.
+            mavenBom("org.springframework.boot:spring-boot-dependencies:3.2.0")
+        }
+    }
+    dependencies {
+        // Common dependencies, versions managed by BOM
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    }
+
+    // Option 1: Using 'tasks.named' with a check (Recommended)
+//    tasks.named('bootJar', org.springframework.boot.gradle.tasks.bundling.BootJar) {
+//        enabled = false
+//    }
+
+    // Since the tasks.named block above might still cause issues in some versions,
+    // the safest approach is often to configure it directly in the subproject
+    // or use a conditional block if possible.
+
+    // A safer, more explicit conditional in the root build file:
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('org.springframework.boot')) {
+            project.tasks.named('bootJar') {
+                enabled = false
+            }
+        }
+    }
+}

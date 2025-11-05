@@ -1,0 +1,39 @@
+# cronjob-report-gen.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: report-gen-cronjob
+spec:
+  # Cron expression: 0 minutes past 5 PM (17:00) on Sunday (0 or 7)
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Replace # Cancel the previous job if a new one is due
+  jobTemplate:
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: report-runner
+              image: my-scheduled-batch:java17
+              imagePullPolicy: IfNotPresent
+              args:
+                - "--spring.batch.job.names=generateReportJob"
+                - "run.id=$(date +%s)"
+              env:
+                - name: SPRING_DATASOURCE_URL
+                  value: "jdbc:postgresql://postgres-service:5432/batchdb"
+                - name: SPRING_DATASOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials-secret
+                      key: username
+                - name: SPRING_DATASOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials-secret
+                      key: password
+              resources:
+                limits:
+                  memory: "750Mi"
+                  cpu: "700m"

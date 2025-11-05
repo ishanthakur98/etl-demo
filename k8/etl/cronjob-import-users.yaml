@@ -1,0 +1,44 @@
+# cronjob-import-users.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: import-users-cronjob
+spec:
+  # Cron expression: 7 minutes past 5 PM (17:07) every day
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Forbid # Ensures previous job run completes before starting new one
+  jobTemplate:
+    spec:
+      # Job must be retried if it fails (e.g., transient DB error)
+      backoffLimit: 4
+      template:
+        spec:
+          restartPolicy: OnFailure # Required for batch jobs
+          containers:
+            - name: import-runner
+              image: my-scheduled-batch:java17 # Your Docker Image
+              imagePullPolicy: IfNotPresent
+
+              # Arguments instruct the Spring Boot application to run a specific job
+              args:
+                - "--spring.batch.job.names=importUsersJob"
+                - "run.id=$(date +%s)" # Unique parameter required by Spring Batch
+
+              # --- Database Configuration ---
+              env:
+                - name: SPRING_DATASOURCE_URL
+                  value: "jdbc:postgresql://postgres-service:5432/batchdb" # K8s Service Name
+                - name: SPRING_DATASOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials-secret
+                      key: username
+                - name: SPRING_DATASOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials-secret
+                      key: password
+              resources:
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"

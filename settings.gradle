@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+rootProject.name = "etl-demo"
+include 'job-import-users'
+include 'batch-launcher'
+
+
+include 'batch-domain'
+include 'job-process-data'
+include 'job-report-gen'

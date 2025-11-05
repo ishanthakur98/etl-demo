@@ -1,0 +1,39 @@
+# cronjob-process-data.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: process-data-cronjob
+spec:
+  # Cron expression: On the hour, every hour
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Allow # OK for simple tasks to run concurrently if needed
+  jobTemplate:
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: process-runner
+              image: my-scheduled-batch:java17
+              imagePullPolicy: IfNotPresent
+              args:
+                - "--spring.batch.job.names=processDataJob"
+                - "run.id=$(date +%s)"
+              env:
+                - name: SPRING_DATASOURCE_URL
+                  value: "jdbc:postgresql://postgres-service:5432/batchdb"
+                - name: SPRING_DATASOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials-secret
+                      key: username
+                - name: SPRING_DATASOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials-secret
+                      key: password
+              resources:
+                limits:
+                  memory: "300Mi"
+                  cpu: "300m"

@@ -1,0 +1,29 @@
+
+
+
+# 1. Create the Kubernetes Secret (must be done first)
+echo "🔑 Applying database credentials secret..."
+kubectl apply -f db-credentials-secret.yaml
+
+# 2. Create the Persistent Volume Claim (requests storage)
+echo "💾 Applying Persistent Volume Claim..."
+kubectl apply -f postgres-pvc.yaml
+
+# 3. Create the PostgreSQL Deployment (runs the database pod)
+echo "🐘 Applying PostgreSQL Deployment..."
+kubectl apply -f postgres-deployment.yaml
+
+# 4. Create the Service (exposes the database via a stable internal name)
+echo "🌐 Applying PostgreSQL Service..."
+kubectl apply -f postgres-service.yaml
+
+# 5. Verify the resources are running
+echo "--- Verification ---"
+echo "Checking Deployment status (should show 1/1 READY):"
+kubectl get deploy postgres-database
+
+echo "Checking Pod status (should show 1/1 READY):"
+kubectl get pods -l app=postgres
+
+echo "Checking Service details (should show the cluster IP):"
+kubectl get svc postgres-service
