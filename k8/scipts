@@ -27,3 +27,10 @@ kubectl get pods -l app=postgres
 
 echo "Checking Service details (should show the cluster IP):"
 kubectl get svc postgres-service
+
+
+docker build -t yourusername/my-scheduled-batch:latest .
+
+
+# Deletes all Jobs created by the 'import-users-cronjob' CronJob.
+kubectl delete job -l job-name=import-users-cronjob

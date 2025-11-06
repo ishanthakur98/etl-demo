@@ -1,0 +1,40 @@
+global:
+  imageRegistry: docker.io
+  security:
+    # we're using non-Bitnami images for server/skipper, so skip Bitnami's image check
+    allowInsecureImages: true
+
+mariadb:
+  image:
+    repository: mariadb
+    tag: "11.4"
+  auth:
+    rootPassword: changeme
+    username: dataflow
+    password: changeme
+    database: dataflow
+
+# Spring Cloud Skipper (from Docker Hub, not Bitnami)
+skipper:
+  image:
+    repository: springcloud/spring-cloud-skipper-server
+    tag: "2.11.5-jdk17"
+
+# Spring Cloud Data Flow Server (from Docker Hub, not Bitnami)
+server:
+  image:
+    repository: springcloud/spring-cloud-dataflow-server
+    tag: "2.11.5-jdk17"
+  configuration:
+    spring:
+      cloud:
+        dataflow:
+          # batch-only: disable streams to simplify local setup
+          features:
+            streams-enabled: false
+
+# Batch-only; no message broker needed
+rabbitmq:
+  enabled: false
+kafka:
+  enabled: false

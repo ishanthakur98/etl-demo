@@ -3,7 +3,7 @@ package com.example;
 import lombok.Data;
 import lombok.ToString;
 
-@ToString
+//@ToString
 public class User {
 
     private String firstName;

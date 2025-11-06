@@ -1,0 +1,154 @@
+# ============================
+# 1️⃣ POSTGRESQL DATABASE
+# ============================
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: dataflow
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: dataflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+            - name: POSTGRES_DB
+              value: dataflow
+            - name: POSTGRES_USER
+              value: dataflow
+            - name: POSTGRES_PASSWORD
+              value: changeme
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pgdata
+          emptyDir: {}
+
+# ============================
+# 2️⃣ SPRING CLOUD SKIPPER
+# ============================
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skipper
+  namespace: dataflow
+spec:
+  ports:
+    - port: 7577
+      targetPort: 7577
+  selector:
+    app: skipper
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skipper
+  namespace: dataflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skipper
+  template:
+    metadata:
+      labels:
+        app: skipper
+    spec:
+      containers:
+        - name: skipper
+          image: host.docker.internal:5000/spring-cloud-skipper-server:2.11.5-jdk17
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-service:5432/dataflow
+            - name: SPRING_DATASOURCE_USERNAME
+              value: dataflow
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: changeme
+            - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+              value: org.postgresql.Driver
+            - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+              value: org.hibernate.dialect.PostgreSQLDialect
+          ports:
+            - containerPort: 7577
+
+# ============================
+# 3️⃣ SPRING CLOUD DATA FLOW SERVER
+# ============================
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dataflow-server
+  namespace: dataflow
+spec:
+  ports:
+    - port: 9393
+      targetPort: 9393
+  selector:
+    app: dataflow-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataflow-server
+  namespace: dataflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dataflow-server
+  template:
+    metadata:
+      labels:
+        app: dataflow-server
+    spec:
+      containers:
+        - name: dataflow-server
+          image: host.docker.internal:5000/spring-cloud-dataflow-server:2.11.5-jdk17
+          env:
+            # PostgreSQL Datasource
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-service:5432/dataflow
+            - name: SPRING_DATASOURCE_USERNAME
+              value: dataflow
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: changeme
+            - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+              value: org.postgresql.Driver
+            - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+              value: org.hibernate.dialect.PostgreSQLDialect
+
+            # Connect to Skipper
+            - name: SPRING_CLOUD_SKIPPER_CLIENT_SERVER_URI
+              value: http://skipper:7577/api
+
+            # Disable Streams if you only run Batch Jobs
+            - name: SPRING_CLOUD_DATAFLOW_FEATURES_STREAMS_ENABLED
+              value: "false"
+
+          ports:
+            - containerPort: 9393

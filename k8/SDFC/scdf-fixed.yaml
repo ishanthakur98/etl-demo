@@ -1,0 +1,51 @@
+global:
+  imageRegistry: http://host.docker.internal:5000
+  security:
+    allowInsecureImages: true
+
+mariadb:
+  image:
+    repository: mariadb
+    tag: "11.4"
+  auth:
+    rootPassword: changeme
+    username: dataflow
+    password: changeme
+    database: dataflow
+  primary:
+    initContainers: []
+  metrics:
+    enabled: false
+  volumePermissions:
+    enabled: false
+  updateStrategy:
+    type: Recreate
+
+skipper:
+  image:
+    repository: spring-cloud-skipper-server
+    tag: "2.11.5-jdk17"
+  imagePullPolicy: IfNotPresent
+
+server:
+  image:
+    repository: spring-cloud-dataflow-server
+    tag: "2.11.5-jdk17"
+  imagePullPolicy: IfNotPresent
+  configuration:
+    spring:
+      datasource:
+        driver-class-name: org.mariadb.jdbc.Driver
+      jpa:
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.MariaDBDialect
+      cloud:
+        dataflow:
+          features:
+            streams-enabled: false
+
+rabbitmq:
+  enabled: false
+kafka:
+  enabled: false

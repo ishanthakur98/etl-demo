@@ -15,11 +15,11 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: process-runner
-              image: my-scheduled-batch:java17
+              image: my-scheduled-batch:latest
               imagePullPolicy: IfNotPresent
               args:
-                - "--spring.batch.job.names=processDataJob"
-                - "run.id=$(date +%s)"
+                - "--spring.batch.job.name=processDataJob"
+                - "--spring.batch.job.parameters=run.id=$(date +%s)"
               env:
                 - name: SPRING_DATASOURCE_URL
                   value: "jdbc:postgresql://postgres-service:5432/batchdb"

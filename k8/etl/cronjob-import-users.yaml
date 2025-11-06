@@ -16,13 +16,13 @@ spec:
           restartPolicy: OnFailure # Required for batch jobs
           containers:
             - name: import-runner
-              image: my-scheduled-batch:java17 # Your Docker Image
+              image: my-scheduled-batch:latest # Your Docker Image
               imagePullPolicy: IfNotPresent
 
               # Arguments instruct the Spring Boot application to run a specific job
               args:
-                - "--spring.batch.job.names=importUsersJob"
-                - "run.id=$(date +%s)" # Unique parameter required by Spring Batch
+                - "--spring.batch.job.name=importUsersJob"
+                - "--spring.batch.job.parameters=run.id=$(date +%s)" # Unique parameter required by Spring Batch
 
               # --- Database Configuration ---
               env:
